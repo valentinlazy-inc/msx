@@ -1,7 +1,7 @@
 {
    "extension": "{col:msx-white}{ico:msx-white:event} {now:date:D, M d, yyyy}{tb}{ico:msx-white:access-time} {now:time:hh:mm}",
-   "dictionary": "https://wals09.github.io/msx/dictionary.json",
-   "logo": "https://wals09.github.io/msx/logo/mss.png",
+   "dictionary": "https://valentinlazy-inc.github.io/msx/dictionary.json",
+   "logo": "https://valentinlazy-inc.github.io/msx/logo/mss.png",
    "headline": "",
    "menu": [
       {
@@ -10,43 +10,7 @@
       {
          "icon": "menu",
          "label": "Все приложения",
-         "data": "https://wals09.github.io/msx/mooviestile/all.json"
-      },
-      {
-         "icon": "live-tv",
-         "label": "IPTV приложения",
-         "data": "https://wals09.github.io/msx/mooviestile/iptv.json"
-      },
-      {
-         "icon": "movie",
-         "label": "Бесплатное кино",
-         "data": "https://wals09.github.io/msx/mooviestile/free_kino.json"
-      },
-      {
-         "icon": "movie-filter",
-         "label": "Всё кино",
-         "data": "https://wals09.github.io/msx/mooviestile/full_kino.json"
-      },
-      {
-         "icon": "devices-other",
-         "label": "Другие медиплатформы",
-         "data": "https://wals09.github.io/msx/mooviestile/social.json"
-      },
-      {
-         "type": "separator"
-      },
-      {
-         "icon": "dvr",
-         "label": "Альтернативные стартовые параметры",
-         "data": "https://wals09.github.io/msx/mooviestile/store.json"
-      },
-      {
-         "type": "separator"
-      },
-      {
-         "icon": "wallpaper",
-         "label": "Тема",
-         "data": "https://wals09.github.io/msx/tema/panel_tems.json"
+         "data": "https://valentinlazy-inc.github.io/msx/menu.json"
       },
       {
          "type": "separator"
