@@ -42,16 +42,17 @@
    },
    "items": [
       {
+         "focus": true,
          "selection": {
             "important": true,
             "action": "update:content:underlay:text",
             "data": {
-               "headline": "LAMPA land",
-               "text": "Мод программы Лампа{br}Программа уже настроенная для он-лайн просмотра и просмотра iptv"
+               "headline": "Kinopub",
+               "text": "Приложение для просмотра различного медиаконтента: фильмов, сериалов, аниме. Нужна регистрация и подписка."
             }
          },
-         "image": "https://valentinlazy-inc.github.io/msx/lampa_land/icon.png",
-         "action": "link:http://lampa.land"
+         "image": "https://valentinlazy-inc.github.io/msx/logon/kinopub.png",
+         "action": "link:https://cdnservices.link"
       },
       {
          "selection": {
@@ -64,19 +65,6 @@
          },
          "image": "https://valentinlazy-inc.github.io/msx/logon/bylampa.png",
          "action": "link:http://bylampa.online"
-      },
-      {
-         "focus": true,
-         "selection": {
-            "important": true,
-            "action": "update:content:underlay:text",
-            "data": {
-               "headline": "Kinopub",
-               "text": "Приложение для просмотра различного медиаконтента: фильмов, сериалов, аниме. Нужна регистрация и подписка."
-            }
-         },
-         "image": "https://valentinlazy-inc.github.io/msx/logon/kinopub.png",
-         "action": "link:https://cdnservices.link"
       }
    ]
 }
