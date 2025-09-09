@@ -1,9 +1,9 @@
 {    
-    "name": "WALS_MSX",
-    "version": "2.3",
-    "dictionary": "https://wals09.github.io/msx/dictionary.json",
-    "parameter": "menu: https://wals09.github.io/msx/mooviestile/menu_ms.json",
+    "name": "Kalaban Release",
+    "version": "2.5",
+    "dictionary": "https://valentinlazy-inc.github.io/msx/dictionary.json",
+    "parameter": "menu: https://valentinlazy-inc.github.io/msx/menu.json",
     "launcher": {
-      "image": "https://raw.githubusercontent.com/wals09/msx/main/img/wals.png"
+      "image": "https://raw.githubusercontent.com/valentinlazy-inc/msx/main/xsmart/logo.png"
    }   
 }
