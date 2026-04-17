@@ -14,7 +14,7 @@ Environment:
 USAGE
 }
 
-BASE_URL="${BASE_URL:-}"
+BASE_URL="${BASE_URL:-https://valentinlazy-inc.github.io/msx/ym/dist}"
 TOKEN="${YAMMY_TOKEN:-${YUMMY_TOKEN:-}}"
 OUT_DIR="${OUT_DIR:-dist}"
 

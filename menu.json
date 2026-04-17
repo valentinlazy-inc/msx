@@ -77,6 +77,18 @@
          },
          "image": "https://valentinlazy-inc.github.io/msx/ym/logo_pink.png",
          "action": "link:https://valentinlazy-inc.github.io/msx/ym/dist/app.html"
+      },
+      {
+         "selection": {
+            "important": true,
+            "action": "update:content:underlay:text",
+            "data": {
+               "headline": "[DEBUG]YummyAnime",
+               "text": "yummy anime tv"
+            }
+         },
+         "image": "https://feisty-earache-brunt.ngrok-free.dev/logo_pink.png",
+         "action": "link:https://feisty-earache-brunt.ngrok-free.dev/app.html"
       }
    ]
 }

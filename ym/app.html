@@ -47,6 +47,7 @@ button,input,select{font:inherit}
 .status{padding:28px;border:1px solid #303036;background:#19191d;border-radius:8px;color:#d7d7dd}
 @media (max-width:760px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.top{display:grid}.search{min-width:0}.main{padding:18px}.grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}.detail{grid-template-columns:100px 1fr}}
 </style>
+<script type="text/javascript" src="//msx.benzac.de/js/tvx-plugin.min.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -83,6 +84,7 @@ button,input,select{font:inherit}
   var player = document.getElementById('player');
   var playerFrame = document.getElementById('playerFrame');
   var restoring = false;
+  var lastFocusSelector = '';
 
   function setStatus(text){content.className='status';content.textContent=text;}
   function api(path){return fetch(apiBase + path,{headers:{'X-Application':apiToken,'Accept':'application/json','Vary':'json'}}).then(function(r){if(!r.ok)throw new Error(r.status + ' ' + r.statusText);return r.json();});}
@@ -127,6 +129,97 @@ button,input,select{font:inherit}
   function responseObj(data){return data.response||data||{};}
   function activate(name){Array.prototype.forEach.call(document.querySelectorAll('.nav button'),function(b){b.classList.toggle('active',b.getAttribute('data-view')===name);});}
   function pushView(state){if(!restoring)history.pushState(state,'',location.href);}
+  function focusableSelector(){return 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';}
+  function isVisible(node){
+    if(!node||!node.getBoundingClientRect)return false;
+    var rect=node.getBoundingClientRect();
+    return rect.width>0&&rect.height>0&&window.getComputedStyle(node).visibility!=='hidden'&&window.getComputedStyle(node).display!=='none';
+  }
+  function focusables(scope){
+    return Array.prototype.filter.call((scope||document).querySelectorAll(focusableSelector()),function(node){
+      return !node.disabled&&isVisible(node);
+    });
+  }
+  function setFocus(node){
+    if(!node||typeof node.focus!=='function')return false;
+    node.focus();
+    if(document.activeElement===node){
+      if(node.id)lastFocusSelector='#'+node.id;
+      else if(node.className&&typeof node.className==='string')lastFocusSelector=node.tagName.toLowerCase()+'.'+node.className.trim().split(/\s+/).join('.');
+      return true;
+    }
+    return false;
+  }
+  function rememberFocus(){
+    var node=document.activeElement;
+    if(!node)return;
+    if(node.id)lastFocusSelector='#'+node.id;
+  }
+  function preferredFocus(){
+    return content.querySelector('.back')||
+      content.querySelector('.episode')||
+      content.querySelector('.card')||
+      content.querySelector('.filters button')||
+      document.querySelector('.nav button.active')||
+      searchInput||
+      document.querySelector('.nav button');
+  }
+  function focusDefault(){
+    if(lastFocusSelector){
+      var saved=document.querySelector(lastFocusSelector);
+      if(setFocus(saved))return;
+    }
+    setFocus(preferredFocus());
+  }
+  function deferFocus(){setTimeout(focusDefault,0);}
+  function centerX(rect){return rect.left+rect.width/2;}
+  function centerY(rect){return rect.top+rect.height/2;}
+  function directionalCandidates(current,dir){
+    var currentRect=current.getBoundingClientRect();
+    var cx=centerX(currentRect);
+    var cy=centerY(currentRect);
+    return focusables().filter(function(node){
+      if(node===current)return false;
+      var rect=node.getBoundingClientRect();
+      var nx=centerX(rect);
+      var ny=centerY(rect);
+      if(dir==='left')return nx<cx-5;
+      if(dir==='right')return nx>cx+5;
+      if(dir==='up')return ny<cy-5;
+      return ny>cy+5;
+    }).map(function(node){
+      var rect=node.getBoundingClientRect();
+      var nx=centerX(rect);
+      var ny=centerY(rect);
+      var primary=Math.abs((dir==='left'||dir==='right'?nx-cx:ny-cy));
+      var secondary=Math.abs((dir==='left'||dir==='right'?ny-cy:nx-cx));
+      return {node:node,score:primary*1000+secondary};
+    }).sort(function(a,b){return a.score-b.score;});
+  }
+  function moveFocus(dir){
+    var current=document.activeElement;
+    if(!current||!current.matches||!current.matches(focusableSelector())){
+      return setFocus(preferredFocus());
+    }
+    var list=directionalCandidates(current,dir);
+    if(list.length)return setFocus(list[0].node);
+    return false;
+  }
+  function keyName(e){
+    var code=Number(e.keyCode||e.which||0);
+    var key=e.key||e.code||'';
+    if(key==='Left'||key==='ArrowLeft'||code===37)return 'left';
+    if(key==='Up'||key==='ArrowUp'||code===38)return 'up';
+    if(key==='Right'||key==='ArrowRight'||code===39)return 'right';
+    if(key==='Down'||key==='ArrowDown'||code===40)return 'down';
+    if(key==='Enter'||key==='NumpadEnter'||code===13)return 'enter';
+    if(key==='Escape'||key==='Esc'||key==='GoBack'||key==='BrowserBack'||code===8||code===27||code===461||code===10009)return 'back';
+    return '';
+  }
+  function goBack(){
+    if(player.classList.contains('active'))history.back();
+    else if(history.state&&history.state.view&&history.state.view!=='catalog')history.back();
+  }
   function restoreView(state){
     restoring=true;
     closePlayer();
@@ -141,6 +234,7 @@ button,input,select{font:inherit}
     else if(state.view==='player')openPlayer(state.url);
     else loadCatalog();
     restoring=false;
+    deferFocus();
   }
   function renderCards(items){
     content.className='grid';
@@ -156,6 +250,7 @@ button,input,select{font:inherit}
       card.onclick=function(){loadAnime(id(item));};
       content.appendChild(card);
     });
+    deferFocus();
   }
   function loadCatalog(){pushView({view:'catalog'});activate('catalog');headline.textContent='Популярное';setStatus('Загрузка...');api('/anime?limit=30&offset=0').then(function(d){renderCards(responseList(d));}).catch(function(e){setStatus('Ошибка: '+e.message);});}
   function loadFilter(q,label){pushView({view:'filter',query:q,label:label});activate('filters');headline.textContent=label;setStatus('Загрузка...');api('/anime?limit=30&offset=0&'+q).then(function(d){renderCards(responseList(d));}).catch(function(e){setStatus('Ошибка: '+e.message);});}
@@ -174,9 +269,10 @@ button,input,select{font:inherit}
     ].forEach(function(f){
       var b=document.createElement('button');b.textContent=f[0];b.onclick=function(){loadFilter(f[1],f[0]);};content.appendChild(b);
     });
+    deferFocus();
   }
   function loadSearch(q){pushView({view:'search',query:q});activate('search');headline.textContent='Поиск: '+q;setStatus('Загрузка...');api('/search?q='+enc(q)+'&limit=30&offset=0').then(function(d){renderCards(responseList(d));}).catch(function(e){setStatus('Ошибка: '+e.message);});}
-  function showSearchHome(){pushView({view:'search-home'});activate('search');headline.textContent='Поиск';setStatus('Введите название аниме в строке поиска.');searchInput.focus();}
+  function showSearchHome(){pushView({view:'search-home'});activate('search');headline.textContent='Поиск';setStatus('Введите название аниме в строке поиска.');setTimeout(function(){setFocus(searchInput);},0);}
   function loadAnime(animeId){
     pushView({view:'anime',animeId:animeId});
     setStatus('Загрузка...');
@@ -201,6 +297,7 @@ button,input,select{font:inherit}
       Object.keys(groups).sort(function(a,b){return maxEpisode(groups[b])-maxEpisode(groups[a])||groups[b].length-groups[a].length||a.localeCompare(b);}).forEach(function(g){
         var b=document.createElement('button');b.className='episode';b.textContent=g+' ('+episodeRange(groups[g])+')';b.onclick=function(){loadEpisodeGroup(animeId,g);};list.appendChild(b);
       });
+      deferFocus();
     }).catch(function(e){setStatus('Ошибка: '+e.message);});
   }
   function loadEpisodeGroup(animeId, group){
@@ -218,6 +315,7 @@ button,input,select{font:inherit}
     videos.forEach(function(v){
       var b=document.createElement('button');b.className='episode';b.textContent='Серия '+(v.number||v.index||'?');b.onclick=function(){openPlayer(videoUrl(v));};content.querySelector('.episodes').appendChild(b);
     });
+    deferFocus();
   }
   function closePlayer(){
     playerFrame.src='about:blank';
@@ -229,7 +327,26 @@ button,input,select{font:inherit}
     player.classList.add('active');
   }
   window.addEventListener('popstate',function(e){restoreView(e.state);});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&player.classList.contains('active')){history.back();}});
+  document.addEventListener('focusin',rememberFocus);
+  document.addEventListener('keydown',function(e){
+    var key=keyName(e);
+    if(!key)return;
+    if(key==='back'){
+      e.preventDefault();
+      goBack();
+      return;
+    }
+    if(player.classList.contains('active'))return;
+    if((key==='left'||key==='right'||key==='up'||key==='down')&&moveFocus(key)){
+      e.preventDefault();
+      return;
+    }
+    if(key==='enter'&&document.activeElement&&typeof document.activeElement.click==='function'){
+      if(document.activeElement===searchInput)return;
+      e.preventDefault();
+      document.activeElement.click();
+    }
+  });
   searchForm.onsubmit=function(e){e.preventDefault();var q=searchInput.value.trim();if(q.length>1)loadSearch(q);};
   Array.prototype.forEach.call(document.querySelectorAll('.nav button'),function(b){b.onclick=function(){var v=b.getAttribute('data-view');if(v==='catalog')loadCatalog();else if(v==='filters')renderFilters();else showSearchHome();};});
   history.replaceState({view:'catalog'},'',location.href);
