@@ -1,0 +1,8 @@
+{
+  "name": "YummyAnime HTML",
+  "version": "0.2.0",
+  "parameter": "menu:{BASE}/menu.json",
+  "launcher": {
+    "icon": "play-circle-outline"
+  }
+}

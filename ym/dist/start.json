@@ -1,0 +1,8 @@
+{
+  "name": "YummyAnime HTML",
+  "version": "0.2.0",
+  "parameter": "menu:https://valentinlazy-inc.github.io/msx/ym/dist/menu.json",
+  "launcher": {
+    "icon": "play-circle-outline"
+  }
+}

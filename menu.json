@@ -65,8 +65,18 @@
          },
          "image": "https://valentinlazy-inc.github.io/msx/logon/bylampa.png",
          "action": "link:http://bylampa.online"
+      },
+      {
+         "selection": {
+            "important": true,
+            "action": "update:content:underlay:text",
+            "data": {
+               "headline": "YummyAnime",
+               "text": "yummy anime tv"
+            }
+         },
+         "image": "https://valentinlazy-inc.github.io/msx/ym/logo_pink.png",
+         "action": "link:https://valentinlazy-inc.github.io/msx/ym/dist/app.html"
       }
    ]
 }
-
-

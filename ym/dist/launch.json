@@ -1,0 +1,17 @@
+{
+  "type": "pages",
+  "headline": "YummyAnime",
+  "template": {
+    "type": "default",
+    "layout": "0,0,12,2",
+    "color": "msx-glass"
+  },
+  "items": [
+    {
+      "title": "Открыть HTML-приложение",
+      "titleFooter": "Каталог, поиск, фильтры и просмотр",
+      "icon": "open-in-browser",
+      "action": "link:https://valentinlazy-inc.github.io/msx/ym/dist/app.html"
+    }
+  ]
+}
