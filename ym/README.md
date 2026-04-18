@@ -4,7 +4,7 @@
 - сервер отдает `app.html`, `start.json`, `menu.json`, `launch.json`
 - API-ендпоинт `/api/resolve` пытается превратить iframe URL в прямой `m3u8/mp4`
 
-## Запуск
+## Локальный запуск
 
 ```bash
 cd ym
@@ -19,6 +19,28 @@ npm start
 ```bash
 YAMMY_TOKEN=token npm start
 ```
+
+## Сборка и деплой
+
+```bash
+cd ym
+npm install
+npm run build
+npm run deploy
+```
+
+Что делает `npm run build`:
+- очищает `dist`
+- кладет Worker entry в `dist/worker.js`
+- кладет статику в `dist/static`
+
+Что делает `npm run deploy`:
+- запускает сборку
+- публикует Worker и `dist/static` через `wrangler deploy`
+
+Конфиг деплоя лежит в [wrangler.jsonc](air-file://fd7mj2ujdf4d3b9eevs6/Users/val/p/tmp/msx/ym/wrangler.jsonc?type=file&root=%252F):
+- entrypoint: `dist/worker.js`
+- assets directory: `dist/static`
 
 ## Что отдает сервер
 

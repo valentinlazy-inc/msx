@@ -364,9 +364,8 @@ async function handleRequest(request, env) {
   return handleStatic(request, env);
 }
 
-if (typeof addEventListener === 'function') {
-  addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request, globalThis));
-  });
-}
-
+export default {
+  fetch(request, env) {
+    return handleRequest(request, env);
+  }
+};

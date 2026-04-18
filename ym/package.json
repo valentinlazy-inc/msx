@@ -6,9 +6,12 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build-static": "./scripts/build-static.sh"
+    "build": "./scripts/build-dist.sh",
+    "build-static": "./scripts/build-static.sh",
+    "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
-    "playwright": "^1.52.0"
+    "playwright": "^1.52.0",
+    "wrangler": "^4.11.1"
   }
 }
