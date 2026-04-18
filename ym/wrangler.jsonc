@@ -15,7 +15,8 @@
     }
   },
   "assets": {
-    "directory": "./assets"
+    "directory": "."
   },
-  "compatibility_date": "2026-04-18","name": "msx-ym"
+  "compatibility_date": "2026-04-18",
+  "name": "msx-ym"
 }
