@@ -16,5 +16,6 @@
   },
   "assets": {
     "directory": "./assets"
-  }
+  },
+  "compatibility_date": "2026-04-18"
 }
