@@ -316,8 +316,8 @@
         <h1 class="brand">YummyAnime</h1>
         <nav class="nav">
             <button data-view="catalog" class="active" tabindex="1">Популярное</button>
-            <button data-view="filters" tabindex="2">Фильтры</button>
-            <button data-view="search" tabindex="3">Поиск</button>
+<!--            <button data-view="filters" tabindex="2">Фильтры</button>-->
+<!--            <button data-view="search" tabindex="3">Поиск</button>-->
             <button data-view="restart" tabindex="4">Рестарт</button>
         </nav>
     </aside>
@@ -538,9 +538,9 @@
             return content.querySelector('.back') ||
                 content.querySelector('.episode') ||
                 content.querySelector('.card') ||
-                content.querySelector('.filters button') ||
-                document.querySelector('.nav button.active') ||
-                searchInput ||
+                // content.querySelector('.filters button') ||
+                // document.querySelector('.nav button.active') ||
+                // searchInput ||
                 document.querySelector('.nav button');
         }
 
@@ -813,6 +813,7 @@
                     return maxEpisode(groups[b]) - maxEpisode(groups[a]) || groups[b].length - groups[a].length || a.localeCompare(b);
                 }).forEach(function (g) {
                     var b = document.createElement('button');
+                    b.tabIndex = (+num(groups[g][0]) || 1) + 10;
                     b.className = 'episode';
                     b.textContent = g + ' (' + episodeRange(groups[g]) + ')';
                     b.onclick = function () {
