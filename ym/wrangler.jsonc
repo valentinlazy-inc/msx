@@ -13,5 +13,8 @@
       "persist": true,
       "head_sampling_rate": 1
     }
+  },
+  "assets": {
+    "directory": "./assets"
   }
 }
