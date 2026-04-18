@@ -317,17 +317,17 @@
         <nav class="nav">
             <button data-view="catalog" class="active" tabindex="1">Популярное</button>
 <!--            <button data-view="filters" tabindex="2">Фильтры</button>-->
-<!--            <button data-view="search" tabindex="3">Поиск</button>-->
-            <form class="search" id="searchForm">
-                <input id="searchInput" type="search" tabindex="0" placeholder="Название аниме" autocomplete="off">
-                <button type="submit" style="display:none;" tabindex="-1">Искать</button>
-            </form>
+            <button data-view="search" tabindex="3">Поиск</button>
             <button data-view="restart" tabindex="4">Рестарт</button>
         </nav>
     </aside>
     <main class="main">
         <div class="top">
             <h2 class="headline" id="headline">Популярное</h2>
+            <form class="search" id="searchForm">
+                <input id="searchInput" type="search" tabindex="-1" placeholder="Название аниме" autocomplete="off">
+                <button type="submit" tabindex="-1">Искать</button>
+            </form>
         </div>
         <section id="content" class="status">Загрузка...</section>
     </main>
@@ -502,7 +502,7 @@
         }
 
         function focusableSelector() {
-            return 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+            return 'button,[href],select,textarea,[tabindex]:not([tabindex="-1"])';
         }
 
         function isVisible(node) {
