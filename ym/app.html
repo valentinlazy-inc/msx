@@ -43,6 +43,7 @@ button,input,select{font:inherit}
 .panel p{margin:0;color:#c8c8ce;line-height:1.45}
 .player{position:fixed;inset:0;background:#000;z-index:20;display:none}
 .player.active{display:block}
+.player video{width:100%;height:100%;border:0;background:#000;display:none}
 .player iframe{width:100%;height:100%;border:0;background:#000}
 .status{padding:28px;border:1px solid #303036;background:#19191d;border-radius:8px;color:#d7d7dd}
 @media (max-width:760px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.top{display:grid}.search{min-width:0}.main{padding:18px}.grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}.detail{grid-template-columns:100px 1fr}}
@@ -57,6 +58,7 @@ button,input,select{font:inherit}
       <button data-view="catalog" class="active">Популярное</button>
       <button data-view="filters">Фильтры</button>
       <button data-view="search">Поиск</button>
+      <button data-view="restart">Рестарт</button>
     </nav>
   </aside>
   <main class="main">
@@ -71,7 +73,8 @@ button,input,select{font:inherit}
   </main>
 </div>
 <div class="player" id="player">
-  <iframe id="playerFrame" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  <video id="nativePlayer" tabindex="0" controls playsinline></video>
+  <iframe id="playerFrame" tabindex="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
 </div>
 <script>
 (function(){
@@ -82,9 +85,11 @@ button,input,select{font:inherit}
   var searchForm = document.getElementById('searchForm');
   var searchInput = document.getElementById('searchInput');
   var player = document.getElementById('player');
+  var nativePlayer = document.getElementById('nativePlayer');
   var playerFrame = document.getElementById('playerFrame');
   var restoring = false;
   var lastFocusSelector = '';
+  var activePlayerMode = 'iframe';
 
   function setStatus(text){content.className='status';content.textContent=text;}
   function api(path){return fetch(apiBase + path,{headers:{'X-Application':apiToken,'Accept':'application/json','Vary':'json'}}).then(function(r){if(!r.ok)throw new Error(r.status + ' ' + r.statusText);return r.json();});}
@@ -123,10 +128,18 @@ button,input,select{font:inherit}
     var hashIndex=url.indexOf('#');
     if(hashIndex>=0){hash=url.slice(hashIndex);url=url.slice(0,hashIndex);}
     var sep=url.indexOf('?')>=0?'&':'?';
-    return url+sep+'autoplay=1&auto=1&autostart=1'+hash;
+    return url+sep+'autoplay=1&auto=1&autostart=1&resume=1&'+hash;
   }
   function responseList(data){var r=data.response||data.items||data.data||data;return Array.isArray(r)?r:[];}
   function responseObj(data){return data.response||data||{};}
+  function resolverUrl(url){return '/api/resolve?url='+enc(url);}
+  function providerOf(url){
+    var value=String(url||'');
+    if(/kodik(player)?\./i.test(value))return 'kodik';
+    if(/aksor\.tv/i.test(value))return 'aksor';
+    if(/alloha/i.test(value))return 'alloha';
+    return '';
+  }
   function activate(name){Array.prototype.forEach.call(document.querySelectorAll('.nav button'),function(b){b.classList.toggle('active',b.getAttribute('data-view')===name);});}
   function pushView(state){if(!restoring)history.pushState(state,'',location.href);}
   function focusableSelector(){return 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';}
@@ -216,9 +229,49 @@ button,input,select{font:inherit}
     if(key==='Escape'||key==='Esc'||key==='GoBack'||key==='BrowserBack'||code===8||code===27||code===461||code===10009)return 'back';
     return '';
   }
+  function exitToMsx(){window.history.go(1 - window.history.length);}
   function goBack(){
-    if(player.classList.contains('active'))history.back();
+    if(player.classList.contains('active')){
+      history.back();
+      closePlayer();
+    }
     else if(history.state&&history.state.view&&history.state.view!=='catalog')history.back();
+    else exitToMsx();
+  }
+  function isDirectMedia(url){return /\.(m3u8|mp4|mpd)(\?|$)/i.test(url||'');}
+  function resetPlayerSurface(){
+    try{nativePlayer.pause();}catch(e){}
+    nativePlayer.removeAttribute('src');
+    nativePlayer.load();
+    nativePlayer.style.display='none';
+    playerFrame.src='about:blank';
+    playerFrame.style.display='none';
+    activePlayerMode='iframe';
+  }
+  function resolvePlayback(url){
+    return fetch(resolverUrl(url)).then(function(r){
+      if(!r.ok)throw new Error('resolver '+r.status);
+      return r.json();
+    }).then(function(data){
+      var urls=(data.directUrls||[]).filter(Boolean);
+      return urls.length?urls[0]:'';
+    });
+  }
+  function restartApp(){
+    closePlayer();
+    searchInput.value='';
+    lastFocusSelector='';
+    history.replaceState({view:'catalog'},'',location.href);
+    loadCatalog();
+    window.location.reload();
+  }
+  function focusPlayer(){
+    setTimeout(function(){
+      if(player.classList.contains('active')){
+        if(activePlayerMode==='native')nativePlayer.focus();
+        else if(playerFrame.contentWindow)playerFrame.contentWindow.focus();
+      }
+    },1200);
   }
   function restoreView(state){
     restoring=true;
@@ -318,16 +371,42 @@ button,input,select{font:inherit}
     deferFocus();
   }
   function closePlayer(){
-    playerFrame.src='about:blank';
+    resetPlayerSurface();
     player.classList.remove('active');
+    deferFocus();
   }
-  function openPlayer(url){
+  function openIframePlayer(url){
     pushView({view:'player',url:url});
+    resetPlayerSurface();
+    playerFrame.style.display='block';
     playerFrame.src=autoplayUrl(url);
     player.classList.add('active');
+    focusPlayer();
+  }
+  function openNativePlayer(url){
+    pushView({view:'player',url:url});
+    resetPlayerSurface();
+    activePlayerMode='native';
+    nativePlayer.style.display='block';
+    nativePlayer.src=url;
+    nativePlayer.play().catch(function(){});
+    player.classList.add('active');
+    focusPlayer();
+  }
+  function openPlayer(url){
+    if(isDirectMedia(url)){openNativePlayer(url);return;}
+    resolvePlayback(url).then(function(direct){
+      if(direct&&isDirectMedia(direct))openNativePlayer(direct);
+      else openIframePlayer(url);
+    }).catch(function(){
+      openIframePlayer(url);
+    });
   }
   window.addEventListener('popstate',function(e){restoreView(e.state);});
   document.addEventListener('focusin',rememberFocus);
+  document.addEventListener('focusin',function(e){
+    if(player.classList.contains('active')&&!player.contains(e.target))focusPlayer();
+  });
   document.addEventListener('keydown',function(e){
     var key=keyName(e);
     if(!key)return;
@@ -336,7 +415,13 @@ button,input,select{font:inherit}
       goBack();
       return;
     }
-    if(player.classList.contains('active'))return;
+    if(player.classList.contains('active')){
+      if(activePlayerMode==='native')return;
+      e.preventDefault();
+      e.stopPropagation();
+      focusPlayer();
+      return;
+    }
     if((key==='left'||key==='right'||key==='up'||key==='down')&&moveFocus(key)){
       e.preventDefault();
       return;
@@ -348,11 +433,29 @@ button,input,select{font:inherit}
     }
   });
   searchForm.onsubmit=function(e){e.preventDefault();var q=searchInput.value.trim();if(q.length>1)loadSearch(q);};
-  Array.prototype.forEach.call(document.querySelectorAll('.nav button'),function(b){b.onclick=function(){var v=b.getAttribute('data-view');if(v==='catalog')loadCatalog();else if(v==='filters')renderFilters();else showSearchHome();};});
+  Array.prototype.forEach.call(document.querySelectorAll('.nav button'),function(b){b.onclick=function(){var v=b.getAttribute('data-view');if(v==='catalog')loadCatalog();else if(v==='filters')renderFilters();else if(v==='search')showSearchHome();else restartApp();};});
   history.replaceState({view:'catalog'},'',location.href);
-  restoring=true;
-  loadCatalog();
-  restoring=false;
+  try{
+    var savedState=sessionStorage.getItem('ym:returnState');
+    var savedFocus=sessionStorage.getItem('ym:returnFocus');
+    if(savedFocus)lastFocusSelector=savedFocus;
+    if(savedState){
+      sessionStorage.removeItem('ym:returnState');
+      sessionStorage.removeItem('ym:returnFocus');
+      restoring=true;
+      restoreView(JSON.parse(savedState));
+      restoring=false;
+    }else{
+      restoring=true;
+      loadCatalog();
+      restoring=false;
+    }
+  }catch(e){
+    restoring=true;
+    loadCatalog();
+    restoring=false;
+  }
+  TVXInteractionPlugin.init();
 })();
 </script>
 </body>

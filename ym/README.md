@@ -1,54 +1,57 @@
 # YummyAnime для Media Station X
 
-Статическое HTML-приложение для Media Station X. Готовые файлы можно положить на любой static hosting, а само приложение ходит напрямую в YummyAnime API (`https://api.yani.tv`) из браузера.
+`ym` теперь можно запускать как единое Node.js-приложение:
+- сервер отдает `app.html`, `start.json`, `menu.json`, `launch.json`
+- API-ендпоинт `/api/resolve` пытается превратить iframe URL в прямой `m3u8/mp4`
 
-## Сборка
-
-```bash
-BASE_URL=https://example.com/path YAMMY_TOKEN=token ./scripts/build-static.sh
-```
-
-То же самое аргументами:
+## Запуск
 
 ```bash
-./scripts/build-static.sh --base-url https://example.com/path --yammy-token token
+cd ym
+npm install
+npm start
 ```
 
-По умолчанию результат кладется в `dist/`. Можно изменить папку:
+По умолчанию сервер слушает `http://127.0.0.1:8787`.
+
+Если нужен токен из окружения:
 
 ```bash
-OUT_DIR=public BASE_URL=https://example.com/path YAMMY_TOKEN=token ./scripts/build-static.sh
+YAMMY_TOKEN=token npm start
 ```
 
-`YUMMY_TOKEN` тоже поддерживается как алиас для `YAMMY_TOKEN`.
+## Что отдает сервер
 
-## Публикация
+- `/app.html`
+- `/start.json`
+- `/menu.json`
+- `/launch.json`
+- `/api/health`
+- `/api/resolve?url=...`
 
-Загрузите содержимое `dist/` в публичную директорию static hosting. В Media Station X используйте:
+`app.html`, `start.json`, `menu.json`, `launch.json` и `index.js` рендерятся на лету:
+- `{BASE}` заменяется на текущий origin запроса
+- `{YUMMY_TOKEN}` заменяется на `YAMMY_TOKEN` или `YUMMY_TOKEN` из окружения
 
-```text
-https://example.com/path/start.json
-```
+## Резолверы
 
-Для браузерного теста:
+Поддержаны провайдеры:
+- `kodik`
+- `aksor`
+- `alloha`
 
-```text
-https://msx.benzac.de/?start=menu:https://example.com/path/menu.json
-```
+Стратегия резолва:
+- сначала легкий HTTP-парсинг страницы
+- потом fallback через headless browser
 
-## Файлы
+Это особенно важно для `Kodik`: embed-страница отдает подписанную конфигурацию и JS-плеер, а не прямой media URL.
 
-- `start.json` - шаблон MSX start object.
-- `menu.json` - шаблон главного меню.
-- `launch.json` - промежуточная страница с кнопкой запуска HTML-приложения.
-- `app.html` - само приложение: каталог, поиск, фильтры, страница тайтла, озвучки, серии и iframe-плеер.
-- `scripts/build-static.sh` - сборка статики с подстановкой `BASE_URL` и `YAMMY_TOKEN`.
+## Зависимости
 
-## Что уже работает
+Для headless fallback нужен `playwright`. Он добавлен как `optionalDependency`, но для реального резолва его нужно установить.
 
-- Прямые запросы из `app.html` в YummyAnime API через `X-Application`.
-- Каталог, поиск и быстрые фильтры.
-- Страница тайтла с постером, описанием и бейджем статуса.
-- Группировка озвучек по плееру/дубляжу, диапазоны серий и сортировка по максимальной серии.
-- Просмотр iframe-плееров с автозапуском, где его поддерживает конкретный плеер.
-- SPA-навигация через `history.back()` для пульта.
+## Ограничения
+
+- ссылки у провайдеров обычно короткоживущие, поэтому резолв должен происходить прямо перед воспроизведением
+- если прямую ссылку получить не удалось, `app.html` откатывается обратно к iframe
+- DRM-кейсы и агрессивные антибот-проверки могут остаться нерешенными даже с headless fallback

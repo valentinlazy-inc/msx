@@ -4,7 +4,7 @@
     var SOURCE_NAME = 'yummyanime';
     var SOURCE_TITLE = 'YummyAnime';
     var VERSION = '2026-04-17-3';
-    var TOKEN = '75w72xctw7byhm3g';
+    var TOKEN = '{YUMMY_TOKEN}';
     var LIMIT = 30;
     var PAGE_SIZE = 80;
     var VIDEO_PAGE_SIZE = 40;
@@ -353,37 +353,26 @@
         }
     }
 
-    function playVideo(video, title) {
+    function playVideo(video, fullTitle) {
         var url = absoluteUrl(videoUrl(video));
 
         if (!url) {
-            fail('У серии нет ссылки на видео');
+            fail('Нет ссылки на видео');
             return;
         }
 
-        log('Запуск: ' + title);
-        log('URL запуска: ' + url);
+        log('Запуск видео: ' + fullTitle);
+        log('Ссылка: ' + url);
 
+        // === Основной приоритет — iframe от Kodik / Yummy ===
         if (isIframeUrl(url)) {
-            if (url.indexOf('kodikplayer.com') >= 0 && Lampa.Iframe && Lampa.Iframe.show) {
-                log('Открываю Kodik через Lampa.Iframe');
-                Lampa.Iframe.show({
-                    url: url,
-                    onBack: function () {
-                        if (Lampa.Controller) Lampa.Controller.toggle('content');
-                    }
-                });
-                return;
-            }
 
-            if (url.indexOf('iframeCVH') >= 0 && openCvhPlayer(url, title)) {
-                return;
-            }
-
+            // 1. Попытка через встроенный Iframe-плеер Lampa (самый надёжный способ в bylampa)
             if (Lampa.Iframe && Lampa.Iframe.show) {
-                log('Открываю iframe через Lampa.Iframe');
+                log('Открываем через Lampa.Iframe');
                 Lampa.Iframe.show({
                     url: url,
+                    title: fullTitle,
                     onBack: function () {
                         if (Lampa.Controller) Lampa.Controller.toggle('content');
                     }
@@ -391,18 +380,36 @@
                 return;
             }
 
+            // 2. Fallback — прямой вызов плеера с iframe (иногда работает)
+            if (Lampa.Player && Lampa.Player.play) {
+                log('Пробуем Lampa.Player.play с iframe');
+                Lampa.Player.play({
+                    url: url,
+                    title: fullTitle,
+                    playlist: [{ title: fullTitle, file: url }]
+                });
+                return;
+            }
+
+            // 3. Открытие в новом окне (крайний случай)
             if (window.open) {
+                log('Открываем в новом окне');
                 window.open(url, '_blank');
                 return;
             }
         }
 
+        // === Прямая ссылка (m3u8 или mp4) ===
         if (Lampa.Player && Lampa.Player.play) {
+            log('Запуск прямой ссылки через Player');
             Lampa.Player.play({
-                title: title,
+                title: fullTitle,
                 url: url,
-                card: Lampa.Activity && Lampa.Activity.active ? Lampa.Activity.active().movie : false,
-                quality: video.quality || video.translation || ''
+                playlist: [{
+                    title: fullTitle,
+                    file: url,
+                    quality: video.quality || ''
+                }]
             });
         } else {
             fail('Lampa.Player.play недоступен');
