@@ -33,6 +33,19 @@ YAMMY_TOKEN=token npm start
 - `{BASE}` заменяется на текущий origin запроса
 - `{YUMMY_TOKEN}` заменяется на `YAMMY_TOKEN` или `YUMMY_TOKEN` из окружения
 
+## Cloudflare Worker
+
+Есть отдельный [worker.js](air-file://fd7mj2ujdf4d3b9eevs6/Users/val/p/tmp/msx/ym/worker.js?type=file&root=%252F), который повторяет маршруты сервера:
+- `/api/health`
+- `/api/resolve`
+- отдача статики через binding `ASSETS`
+
+Что важно для Worker:
+- binding `ASSETS` обязателен, иначе статика не отдается
+- `{BASE}` и `{YUMMY_TOKEN}` подставляются на лету только в `.html` и `.json`
+- `Kodik` резолвится полноценно через `/ftor`
+- `Aksor` и `Alloha` в Worker-режиме без headless browser поддерживаются только если прямой media URL уже виден в HTML
+
 ## Резолверы
 
 Поддержаны провайдеры:
