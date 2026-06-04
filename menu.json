@@ -77,6 +77,22 @@
          },
          "image": "https://msx-ym.personal-819.workers.dev/logo_pink.png",
          "action": "link:https://msx-ym.personal-819.workers.dev/app.html"
+      },
+      {
+         "selection": {
+            "important": true,
+            "background": "https://wals09.github.io/msx/abstrackt/19.png",
+            "action": "update:content:underlay:text",
+            "data": {
+               "headline": "КИНОПОИСК",
+               "text": "{col:msx-white}Oнлайн-кинотеатр с фильмами и сериалами по подписке Яндекс Плюс или за отдельную плату."
+            }
+         },
+         "image": "https://wals09.github.io/msx/logon/kinopoisk.png",
+         "action": "link:https://smarttv-app.ott.yandex.ru/",
+         "properties": {
+            "image:extension": "| {col:msx-white}Twelfth Item"
+         }
       }
    ]
 }
